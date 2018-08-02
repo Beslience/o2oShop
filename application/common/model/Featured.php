@@ -3,7 +3,7 @@ namespace app\common\model;
 
 use think\Model;
 
-class Category extends Model
+class Featured extends Model
 {
     // 设置在字段中自动加时间
     protected $autoWriteTimestamp = true;

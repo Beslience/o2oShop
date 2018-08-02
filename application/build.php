@@ -35,4 +35,8 @@ return [
         '__dir__' => ['Controller','view'],
         'controller' => ['Index','Image'],
     ],
+    'bis' => [
+        '__dir__' => ['Controller','view'],
+        'controller' => ['Register','Login'],
+    ],
 ];

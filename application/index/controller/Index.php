@@ -8,6 +8,7 @@ class Index extends Controller
 {
     public function index()
     {
+        //dump(Config::get('view_replace_str'));
         return $this->fetch();
     }
 }

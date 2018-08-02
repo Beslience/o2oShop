@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use think\Controller;
 
-class Category extends Controller
+class Bis extends Controller
 {
     private $obj ;
 

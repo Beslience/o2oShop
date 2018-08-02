@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use think\Controller;
 
-class Category extends Controller
+class Deal extends Controller
 {
     private $obj ;
 
@@ -13,18 +13,20 @@ class Category extends Controller
 
     public function index()
     {
-        $parentId = input("get.parent_id", 0, "intval");
+        /*$parentId = input("get.parent_id", 0, "intval");
         $categorys = $this->obj->getFirstCategorys($parentId);
         return $this->fetch('',[
             'categorys' => $categorys,
-        ]);
+        ]);*/
+        return $this->fetch();
     }
 
     public function add(){
-        $categorys = $this->obj->getNormalFirstCategory();
+       /* $categorys = $this->obj->getNormalFirstCategory();
         return $this->fetch('',[
             'categorys' => $categorys,
-        ]);
+        ]);*/
+        return $this->fetch();
     }
 
     public function save(){
