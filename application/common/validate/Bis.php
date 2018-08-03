@@ -8,9 +8,9 @@
 
 namespace app\common\validate;
 
-use think\Controller;
+use think\Validate;
 
-class Bis extends Controller{
+class Bis extends Validate {
     protected $rule = array(
         'name' => 'require|max:25',
         'email' => 'email',

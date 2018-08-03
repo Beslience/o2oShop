@@ -9,7 +9,6 @@ class Image extends Controller
     public function upload(){
         $file = Request::instance()->file('file');
         $info = $file->move('upload');
-        dump($info);
         if ($info && $info->getPathname()){
             return show(1, 'success', '/'.$info->getPathname());
         }

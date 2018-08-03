@@ -8,84 +8,66 @@ class Bis extends Controller
     private $obj ;
 
     public function _initialize(){
-        $this->obj = model('Category');
-    }
-
-    public function index()
-    {
-        $parentId = input("get.parent_id", 0, "intval");
-        $categorys = $this->obj->getFirstCategorys($parentId);
-        return $this->fetch('',[
-            'categorys' => $categorys,
-        ]);
-    }
-
-    public function add(){
-        $categorys = $this->obj->getNormalFirstCategory();
-        return $this->fetch('',[
-            'categorys' => $categorys,
-        ]);
-    }
-
-    public function save(){
-        // 获取post数据
-        //1、 _POST
-        //2、 input('post.')
-        //3、 request()->post()
-        // 判断是否是post提交
-        if (!request()->isPost()){
-            $this->error('请求失败');
-        }
-        $data = input('post.');
-        $validate = validate('Category'); // 底层
-        if (!$validate->scene('add')->check($data)){
-            $this->error($validate->getError());
-        }
-        if (!empty($data['id'])){
-            return $this->update($data);
-        }
-        // 把 $data 提交给 model层
-        $res = $this->obj->add($data);
-        if ($res){
-            $this->success('新增成功');
-        }else{
-            $this->error('新增失败');
-        }
+        $this->obj = model('Bis');
     }
 
     /**
-     * 编辑页面
+     * 入驻申请列表
+     * @return mixed
      */
-    public function edit($id = 0){
-        if (intval($id) < 1){
-            $this->error('参数不合法');
-        }
-        $category = $this->obj->get($id);
-
-        $categorys = $this->obj->getNormalFirstCategory();
+    public function apply()
+    {
+        $bis = $this->obj->getBisByStatus();
         return $this->fetch('',[
-            'categorys' => $categorys,
-            'category' => $category,
+            "bis" => $bis,
         ]);
     }
 
-    public function listorder($id, $listorder){
-        $res = $this->obj->save(['listorder' => $listorder], ['id' => $id]);
-        if ($res){
-            $this->result($_SERVER['HTTP_REFERER'], 1, 'success');
-        }else{
-            $this->result($_SERVER['HTTP_REFERER'], 0, '更新失败');
+    /**
+     * 正常的商户列表
+     * @return mixed
+     */
+    public function index(){
+        $bis = $this->obj->getBisByStatus(1);
+        return $this->fetch('', [
+            'bis' => $bis,
+        ]);
+    }
+
+    public function detail(){
+        $id = input("get.id");
+        if (empty($id)){
+            return $this->error("id错误");
         }
+        // 获取一级城市数据
+        $citys = model('City')->getNormalCitysByParentId();
+        // 获取一级栏目数据
+        $categorys = model('Category')->getNormalCategorysByParentId();
+        // 获取商户数据
+        $bisData = model("Bis")->get($id);
+        $locationData = model("BisLocation")->get(["bis_id" => $id, "is_main" => 1]);
+        $accountData = model('BisAccount')->get(["bis_id" => $id, "is_main" => 1]);
+        return $this->fetch('',[
+            'citys' => $citys,
+            'categorys' => $categorys,
+            'bisData' => $bisData,
+            "locationData" => $locationData,
+            "accountData" => $accountData,
+        ]);
     }
 
     public function status(){
         $data = input('get.');
-        $validate = validate('Category');
+        /*$validate = validate('Bis');
         if (!$validate->scene('status')->check($data)){
             $this->error($validate->getError());
-        }
+        }*/
         $res = $this->obj->save(['status' => $data['status']], ['id' => $data['id']]);
-        if ($res){
+        $location = model("BisLocation")->save(['status' => $data['status']], ['bis_id' => $data['id'], "is_main" => 1]);
+        $account = model("BisAccount")->save(['status' => $data['status']], ['bis_id' => $data['id'], "is_main" => 1]);
+        if ($res && $location && $account){
+            // 发送邮件
+            // status 1 通过 2 不通过 -1 删除
             $this->success('状态更新成功');
         }else{
             $this->error('状态更新失败');

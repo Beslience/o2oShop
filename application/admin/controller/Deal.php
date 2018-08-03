@@ -8,76 +8,53 @@ class Deal extends Controller
     private $obj ;
 
     public function _initialize(){
-        $this->obj = model('Category');
+
+        $this->obj = model('Deal');
     }
 
     public function index()
     {
-        /*$parentId = input("get.parent_id", 0, "intval");
-        $categorys = $this->obj->getFirstCategorys($parentId);
+        $data = input("get.");
+        $sdata = [];
+        // 时间放前面 查询优化
+        if (!empty($data['start_time']) && !empty($data['end_time'])
+            && (strtotime($data['end_time']) > strtotime($data['start_time']))){
+            $sdata['create_time'] = ['gt', strtotime($data['start_time'])];
+            $sdata['create_time'] = ['lt', strtotime($data['end_time'])];
+        }
+        if (!empty($data['category_id'])){
+            $sdata['category_id'] = $data['category_id'];
+        }
+        if (!empty($data['city_id'])){
+            $sdata['city_id'] = $data['city_id'];
+        }
+        if (!empty($data['name'])){
+            $sdata['name'] = ['like', '%' . $data['name'] . '%'];
+        }
+
+        $deals = $this->obj->getNormalDeals($sdata);
+        $categorys = model('Category')->getNormalCategoryByParentId();
+        foreach ($categorys as $category){
+            $categoryArrs[$category->id] = $category->name;
+        }
+
+        $citys = model('City');
+        foreach ($citys as $city){
+            $cityArrs[$city->id] = $city->name;
+        }
+
         return $this->fetch('',[
             'categorys' => $categorys,
-        ]);*/
-        return $this->fetch();
-    }
-
-    public function add(){
-       /* $categorys = $this->obj->getNormalFirstCategory();
-        return $this->fetch('',[
-            'categorys' => $categorys,
-        ]);*/
-        return $this->fetch();
-    }
-
-    public function save(){
-        // 获取post数据
-        //1、 _POST
-        //2、 input('post.')
-        //3、 request()->post()
-        // 判断是否是post提交
-        if (!request()->isPost()){
-            $this->error('请求失败');
-        }
-        $data = input('post.');
-        $validate = validate('Category'); // 底层
-        if (!$validate->scene('add')->check($data)){
-            $this->error($validate->getError());
-        }
-        if (!empty($data['id'])){
-            return $this->update($data);
-        }
-        // 把 $data 提交给 model层
-        $res = $this->obj->add($data);
-        if ($res){
-            $this->success('新增成功');
-        }else{
-            $this->error('新增失败');
-        }
-    }
-
-    /**
-     * 编辑页面
-     */
-    public function edit($id = 0){
-        if (intval($id) < 1){
-            $this->error('参数不合法');
-        }
-        $category = $this->obj->get($id);
-
-        $categorys = $this->obj->getNormalFirstCategory();
-        return $this->fetch('',[
-            'categorys' => $categorys,
-            'category' => $category,
+            'citys' => $citys,
+            'deals' => $deals,
+            'category_id' => empty($data['category_id']) ? '' : $data['category_id'],
+            'city_id' => empty($data['city_id']) ? '' : $data['city_id'],
+            'name' => empty($data['name']) ? '' : $data['name'],
+            'start_time' => empty($data['start_time']) ? '' : $data['start_time'],
+            'end_time' => empty($data['end_time']) ? '' : $data['end_time'],
+            '$categoryArrs' => $categoryArrs,
+            '$cityArrs' => $cityArrs,
         ]);
-    }
-
-    public function listorder($id, $listorder){
-        $res = $this->obj->save(['listorder' => $listorder], ['id' => $id]);
-        if ($res){
-            $this->result($_SERVER['HTTP_REFERER'], 1, 'success');
-        }else{
-            $this->result($_SERVER['HTTP_REFERER'], 0, '更新失败');
-        }
     }
 
     public function status(){
@@ -94,12 +71,5 @@ class Deal extends Controller
         }
     }
 
-    private function update($data){
-        $res = $this->obj->save($data,['id' => intval($data['id'])]);
-        if ($res){
-            $this->success('更新成功');
-        }else{
-            $this->error('更新失败');
-        }
-    }
+
 }
